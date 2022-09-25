@@ -13,6 +13,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\StreamableInputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 #[AsCommand(
     name: 'game:hangman',
@@ -20,6 +21,12 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class GameHangmanCommand extends Command
 {
+    public function __construct(
+        private HttpClientInterface $httpClient
+    ){
+        parent::__construct();
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if ($input instanceof StreamableInputInterface && $stream = $input->getStream()) {
@@ -40,7 +47,7 @@ class GameHangmanCommand extends Command
         $output->getFormatter()->setStyle('question', new OutputFormatterStyle('white', 'black', ['bold']));
         $output->getFormatter()->setStyle('input', new OutputFormatterStyle('white', 'black'));
 
-        $game = new Game(80, 24);
+        $game = new Game($this->httpClient, 80, 24);
         $game->run($inputStream, $output, $cursor);
 
         $cursor->show();

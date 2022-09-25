@@ -4,6 +4,7 @@ namespace App\Game;
 
 use Symfony\Component\Console\Cursor;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class Game
 {
@@ -15,8 +16,11 @@ class Game
     private int $remainingGuesses = self::NUM_GUESSES;
     private array $lettersGuessed;
 
-    public function __construct(int $width, int $height)
-    {
+    public function __construct(
+        private HttpClientInterface $httpClient,
+        int $width,
+        int $height
+    ) {
         $this->board = new Board($width, $height);
     }
 
@@ -55,26 +59,32 @@ class Game
 
     private function getWord(): void
     {
-        // List of words grabbed from API:
-        // https://random-word-api.herokuapp.com/word?length=8&number=100
+        $response = $this->httpClient->request('GET', 'https://random-word-api.herokuapp.com/word?length=8&number=1');
 
-        $words = [
-            'valleyed', 'oosphere', 'rehashed', 'cathodic', 'braciole', 'myoscope', 'bullaces', 'reevoked',
-            'careened', 'diverged', 'symbiote', 'leafiest', 'strutter', 'basseted', 'virilely', 'vitiated',
-            'medusoid', 'bicycler', 'retastes', 'langlauf', 'neurulas', 'unslings', 'underuse', 'autosome',
-            'minicars', 'negliges', 'tetchily', 'emigrate', 'hopeless', 'sublated', 'crannoge', 'strickle',
-            'bylining', 'caramels', 'colander', 'augurers', 'ungulate', 'marchesi', 'monsieur', 'unneeded',
-            'headline', 'domineer', 'colewort', 'docketed', 'precaval', 'aliasing', 'sanative', 'pailfuls',
-            'triacids', 'thriving', 'oxazepam', 'incensed', 'tiderips', 'acrasins', 'browsing', 'columned',
-            'alleyway', 'ecaudate', 'angstrom', 'maquette', 'radicand', 'bustiest', 'cleaning', 'disseize',
-            'entasias', 'lanosity', 'temperas', 'illusory', 'weirdies', 'oxidised', 'vowelize', 'mandolin',
-            'vanillas', 'ratanies', 'tarriers', 'halloaed', 'lustrate', 'pisolith', 'reseeded', 'overfoul',
-            'inconnus', 'endoderm', 'lithiums', 'despises', 'vineries', 'deanship', 'latching', 'mercapto',
-            'salchows', 'westings', 'cavilers', 'analysts', 'vigoroso', 'trooping', 'subshrub', 'hooklike',
-            'depended', 'wanderoo', 'swingles', 'referred',
-        ];
+        $words = $response->toArray(false);
+        if ($words) {
+            $this->word = $words[0];
+        } else {
+            // Fallback it API call fails
 
-        $this->word = $words[array_rand($words)];
+            $words = [
+                'valleyed', 'oosphere', 'rehashed', 'cathodic', 'braciole', 'myoscope', 'bullaces', 'reevoked',
+                'careened', 'diverged', 'symbiote', 'leafiest', 'strutter', 'basseted', 'virilely', 'vitiated',
+                'medusoid', 'bicycler', 'retastes', 'langlauf', 'neurulas', 'unslings', 'underuse', 'autosome',
+                'minicars', 'negliges', 'tetchily', 'emigrate', 'hopeless', 'sublated', 'crannoge', 'strickle',
+                'bylining', 'caramels', 'colander', 'augurers', 'ungulate', 'marchesi', 'monsieur', 'unneeded',
+                'headline', 'domineer', 'colewort', 'docketed', 'precaval', 'aliasing', 'sanative', 'pailfuls',
+                'triacids', 'thriving', 'oxazepam', 'incensed', 'tiderips', 'acrasins', 'browsing', 'columned',
+                'alleyway', 'ecaudate', 'angstrom', 'maquette', 'radicand', 'bustiest', 'cleaning', 'disseize',
+                'entasias', 'lanosity', 'temperas', 'illusory', 'weirdies', 'oxidised', 'vowelize', 'mandolin',
+                'vanillas', 'ratanies', 'tarriers', 'halloaed', 'lustrate', 'pisolith', 'reseeded', 'overfoul',
+                'inconnus', 'endoderm', 'lithiums', 'despises', 'vineries', 'deanship', 'latching', 'mercapto',
+                'salchows', 'westings', 'cavilers', 'analysts', 'vigoroso', 'trooping', 'subshrub', 'hooklike',
+                'depended', 'wanderoo', 'swingles', 'referred',
+            ];
+
+            $this->word = $words[array_rand($words)];
+        }
     }
 
     private function drawLetters(OutputInterface $output, Cursor $cursor): void
