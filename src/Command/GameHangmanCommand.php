@@ -37,13 +37,8 @@ class GameHangmanCommand extends Command
 
         $output->getFormatter()->setStyle('title', new OutputFormatterStyle('yellow', 'black', ['bold']));
         $output->getFormatter()->setStyle('background', new OutputFormatterStyle('cyan', 'black'));
-
-        /*
-        $output->getFormatter()->setStyle('snake', new OutputFormatterStyle('green', 'black', ['bold']));
-        $output->getFormatter()->setStyle('goal', new OutputFormatterStyle('magenta', 'black', ['bold']));
-        $output->getFormatter()->setStyle('background', new OutputFormatterStyle('cyan', 'black'));
-        $output->getFormatter()->setStyle('crash', new OutputFormatterStyle('red', 'black', ['bold', 'blink']));
-        */
+        $output->getFormatter()->setStyle('question', new OutputFormatterStyle('white', 'black', ['bold']));
+        $output->getFormatter()->setStyle('input', new OutputFormatterStyle('white', 'black'));
 
         $game = new Game(80, 24);
         $game->run($inputStream, $output, $cursor);
